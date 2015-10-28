@@ -237,4 +237,41 @@ public class BookAuthorIT extends AbstractIntegrationTestInitializer {
             Assert.assertFalse(include.has(RELATIONSHIPS));
         }
     }
+
+    @Test
+    public void testChildSparseFieldFilter() throws Exception {
+        JsonNode responseBody = mapper.readTree(
+                RestAssured
+                        .given()
+                        .contentType("application/vnd.api+json")
+                        .accept("application/vnd.api+json")
+                        .param("include", "authors")
+                        .param("fields[author]", "name")
+                        .get("/book").asString());
+
+        Assert.assertTrue(responseBody.has("data"));
+
+        // without limit on book fields, should get all book attributes
+        for (JsonNode bookNode : responseBody.get("data")) {
+            Assert.assertTrue(bookNode.has("attributes"));
+            JsonNode attributes = bookNode.get("attributes");
+            Assert.assertEquals(attributes.size(), 3);
+            Assert.assertTrue(attributes.has("title"));
+            Assert.assertTrue(attributes.has("genre"));
+
+            Assert.assertTrue(bookNode.has("relationships"));
+            JsonNode relationships = bookNode.get("relationships");
+            Assert.assertTrue(relationships.has("authors"));
+        }
+
+        Assert.assertTrue(responseBody.has("included"));
+
+        // should have only name attribute for author
+        for (JsonNode include : responseBody.get("included")) {
+            Assert.assertTrue(include.has("attributes"));
+            JsonNode attributes = include.get("attributes");
+            Assert.assertEquals(attributes.size(), 1);
+            Assert.assertTrue(attributes.has("name"));
+        }
+    }
 }
