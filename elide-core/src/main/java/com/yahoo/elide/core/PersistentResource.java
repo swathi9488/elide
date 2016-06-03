@@ -73,7 +73,7 @@ import java.util.stream.Collectors;
  * @param <T> type of resource
  */
 @ToString
-public class PersistentResource<T> implements com.yahoo.elide.security.PersistentResource<T> {
+public class PersistentResource<T> implements PersistentResource<T> {
     private final String type;
     protected T obj;
     private final ResourceLineage lineage;
@@ -140,7 +140,7 @@ public class PersistentResource<T> implements com.yahoo.elide.security.Persisten
 
         // Keep track of new resources for non shareable resources
         requestScope.getNewPersistentResources().add(newResource);
-
+        newResource.markDirty();
         return newResource;
     }
 
